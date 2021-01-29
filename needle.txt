@@ -1,0 +1,46 @@
+########################################
+# Program: needle
+# Rundate: Fri 29 Jan 2021 14:56:30
+# Commandline: needle
+#    -outfile needle.txt
+#    -asequence alpha.faa
+#    -bsequence beta.faa
+#    -gapopen 10
+#    -gapextend 0.5
+# Align_format: srspair
+# Report_file: needle.txt
+########################################
+
+#=======================================
+#
+# Aligned_sequences: 2
+# 1: HBA_HUMAN
+# 2: HBB_HUMAN
+# Matrix: EBLOSUM62
+# Gap_penalty: 10.0
+# Extend_penalty: 0.5
+#
+# Length: 149
+# Identity:      65/149 (43.6%)
+# Similarity:    90/149 (60.4%)
+# Gaps:           9/149 ( 6.0%)
+# Score: 292.5
+# 
+#
+#=======================================
+
+HBA_HUMAN          1 MV-LSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHF-D     48
+                     || |:|.:|:.|.|.||||  :..|.|.|||.|:.:.:|.|:.:|..| |
+HBB_HUMAN          1 MVHLTPEEKSAVTALWGKV--NVDEVGGEALGRLLVVYPWTQRFFESFGD     48
+
+HBA_HUMAN         49 LS-----HGSAQVKGHGKKVADALTNAVAHVDDMPNALSALSDLHAHKLR     93
+                     ||     .|:.:||.|||||..|.::.:||:|::....:.||:||..||.
+HBB_HUMAN         49 LSTPDAVMGNPKVKAHGKKVLGAFSDGLAHLDNLKGTFATLSELHCDKLH     98
+
+HBA_HUMAN         94 VDPVNFKLLSHCLLVTLAAHLPAEFTPAVHASLDKFLASVSTVLTSKYR    142
+                     |||.||:||.:.|:..||.|...||||.|.|:..|.:|.|:..|..||.
+HBB_HUMAN         99 VDPENFRLLGNVLVCVLAHHFGKEFTPPVQAAYQKVVAGVANALAHKYH    147
+
+
+#---------------------------------------
+#---------------------------------------
