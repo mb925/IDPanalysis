@@ -23,10 +23,9 @@ def create_pairwise_sequences():
 
   totalfiles = []
   pairwise_sequences = {}
-  # with open('alignments_global_needle/global_triangular_matrix.csv', 'w+') as global_triangular_matrix:
-  #   global_triangular_matrix.write(f'protein1, protein2 \n')
+
   with open('alignments_global_needle/global_triangular_matrix.csv', 'w') as global_triangular_matrix:
-    global_triangular_matrix.write(f'protein1,protein2 \n')
+
     for filename1 in os.listdir(curpath):
 
       totalfiles.append(filename1.split(".")[0])
@@ -36,13 +35,10 @@ def create_pairwise_sequences():
             pairwise_sequences[filename1.split(".")[0]] = []
           else:
             pairwise_sequences[filename1.split(".")[0]].append(filename2.split(".")[0])
-            global_triangular_matrix.write(filename1.split(".")[0]+ ',' + filename2.split(".")[0] + '\n')
+            global_triangular_matrix.write(filename1.split(".")[0]+ '\t' + filename2.split(".")[0] + '\n')
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-  # create_pairwise_sequences()
-  needle_cline = NeedleCommandline(asequence="beta.faa", bsequence="alpha.faa", gapopen=10, gapextend=0.5,
-                                   outfile="needle2.txt")  # output stringa unica in file
-  print(needle_cline)
+  create_pairwise_sequences()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
