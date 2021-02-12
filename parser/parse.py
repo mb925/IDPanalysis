@@ -62,8 +62,13 @@ def parse_file():
         elif id1 != '' and line.startswith(id1):
             sequence = line.split(id1)[1]
             seq1 += ''.join([i for i in sequence if not i.isdigit()]).strip()
-        elif id2 != '' and line.startswith(id2):
-            sequence = line.split(id2)[1]
+        # elif id2 != '' and line.startswith(id2):
+        #     sequence = line.split(id2)[1]
+        #     seq2 += ''.join([i for i in sequence if not i.isdigit()]).strip()
+
+        elif region != '' and line.startswith(region.split('_')[0]):
+            print(line)
+            sequence = line.split('\t')[1]
             seq2 += ''.join([i for i in sequence if not i.isdigit()]).strip()
 
     if inf is not sys.stdin:
@@ -75,29 +80,29 @@ def parse_file():
 
 
     with open(scriptdir + '/../sequences_regions/search_in_disprot.tsv', 'r') as input:
-        for row in input:
 
+        for row in input:
 
             # if id1 == row.split('\t')[0]:
 
-            if uniprot == row.split('\t')[0]:
-
+            if uniprot == row.split('\t')[0]: # seqres
+                start = row.split('\t')[6]  # seqres
+                end = row.split('\t')[7]  # seqres
                 disprotid1 = row.split('\t')[4]
                 reg1.append(row.split('\t')[5] + '_' + start + '-' + end)
-                ##TODO
-                # if region =
-                # start = row.split('\t')[6]  # seqres
-                # end = row.split('\t')[7]  # seqres
+
             # elif id2 == row.split('\t')[0]:
                 # disprotid2 = row.split('\t')[4]
                 # reg2.append(row.split('\t')[5] + '_' + start + '-' + end)
     reg1 = ','.join(reg1)
-    reg2 = ','.join(reg2)
+    # reg2 = ','.join(reg2)
     # print(reg1)
     # print(reg2)
-    out = "\t".join([disprotid1, uniprot, region.split('_')[0], len1, len2, identity, similarity, gaps, score, seq1, seq2, start, end, reg1, region]) # seqres
+
+    out = "\t".join([disprotid1, uniprot, region.split('_')[0], len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, region]) # seqres
     # out = "\t".join([disprotid1, disprotid2, id1, id2, len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, reg2])
-    print(out)  # script output
+    if len(out) > 0:
+        print(out)  # script output
 
 def parse_arguments(initargs=None):
     if initargs is None:
