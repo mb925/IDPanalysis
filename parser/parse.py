@@ -8,7 +8,10 @@ import re
 def main():
     parse_file()
 
-
+#regions
+#That info is not really important because downstream I will substitute those regions with the converted ones
+# it is probably not useful to add the region info already
+# I probably could filter here already for identity and structural state, but I will not know if needle calculates everything
 def parse_file():
     args = parse_arguments()
     scriptdir = os.path.dirname(os.path.realpath(__file__))
@@ -31,22 +34,22 @@ def parse_file():
     else:
         inf = sys.stdin
 
-    regexpUniProt = re.compile('^[OPQopq][0-9][A-Za-z0-9]{3}[0-9]|[A-Na-nR-Zr-z][0-9]([A-Za-z][A-Za-z0-9]{2}[0-9]){1,2}$')  # seqres
+    # regexpUniProt = re.compile('^[OPQopq][0-9][A-Za-z0-9]{3}[0-9]|[A-Na-nR-Zr-z][0-9]([A-Za-z][A-Za-z0-9]{2}[0-9]){1,2}$')  # seqres
     for line in inf:
         if line.startswith("# 1:"):
             id1 = line.split(":")[1].strip()
-            if regexpUniProt.match(id1) != None: # seqres
-                uniprot = id1
-            else:
-                region = id1
+            # if regexpUniProt.match(id1) != None: # seqres
+            #     uniprot = id1
+            # else:
+            #     region = id1
 
         elif line.startswith("# 2:"):
             id2 = line.split(":")[1].strip()
 
-            if regexpUniProt.match(id2) != None:
-                uniprot = id2
-            else:
-                region = id2
+            # if regexpUniProt.match(id2) != None: # seqres
+            #     uniprot = id2
+            # else:
+            #     region = id2
 
         elif line.startswith("# Identity:"):
             identity = line.split(":")[1].strip()
@@ -59,21 +62,25 @@ def parse_file():
             gaps = gaps.split('(')[0].strip()
         elif line.startswith("# Score:"):
             score = line.split(":")[1].strip()
-        elif id1 != '' and line.startswith(id1):
-            sequence = line.split(id1)[1]
+
+
+        elif id1 != '' and line.startswith(id1 + ' '):
+            sequence = line.split(id1 + ' ')[1]
             seq1 += ''.join([i for i in sequence if not i.isdigit()]).strip()
-        # elif id2 != '' and line.startswith(id2):
-        #     sequence = line.split(id2)[1]
-        #     seq2 += ''.join([i for i in sequence if not i.isdigit()]).strip()
+        elif id2 != '' and line.startswith(id2  + ' '):
+            sequence = line.split(id2  + ' ')[1]
+            seq2 += ''.join([i for i in sequence if not i.isdigit()]).strip()
+
 
         elif region != '' and line.startswith(region.split('_')[0]):
-            print(line)
-            sequence = line.split('\t')[1]
+
+            sequence = line.split('\t')
+            if len(sequence) < 2:
+                sequence = line.split('    ')[1]
             seq2 += ''.join([i for i in sequence if not i.isdigit()]).strip()
 
     if inf is not sys.stdin:
         inf.close()
-
 
     len1 = str(len(seq1.replace("-", "")))
     len2 = str(len(seq2.replace("-", "")))
@@ -83,24 +90,27 @@ def parse_file():
 
         for row in input:
 
-            # if id1 == row.split('\t')[0]:
+            if id1 == row.split('\t')[0]:
 
-            if uniprot == row.split('\t')[0]: # seqres
-                start = row.split('\t')[6]  # seqres
-                end = row.split('\t')[7]  # seqres
+            # if uniprot == row.split('\t')[0]: # seqres
+                start = row.split('\t')[6]
+                end = row.split('\t')[7]
                 disprotid1 = row.split('\t')[4]
                 reg1.append(row.split('\t')[5] + '_' + start + '-' + end)
 
-            # elif id2 == row.split('\t')[0]:
-                # disprotid2 = row.split('\t')[4]
-                # reg2.append(row.split('\t')[5] + '_' + start + '-' + end)
+            elif id2 == row.split('\t')[0]:
+                start = row.split('\t')[6]
+                end = row.split('\t')[7]
+                disprotid2 = row.split('\t')[4]
+                reg2.append(row.split('\t')[5] + '_' + start + '-' + end)
     reg1 = ','.join(reg1)
-    # reg2 = ','.join(reg2)
-    # print(reg1)
-    # print(reg2)
+    reg2 = ','.join(reg2)
 
-    out = "\t".join([disprotid1, uniprot, region.split('_')[0], len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, region]) # seqres
-    # out = "\t".join([disprotid1, disprotid2, id1, id2, len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, reg2])
+
+    # out = "\t".join([disprotid1, uniprot, region.split('_')[0], len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, region]) # seqres
+    out = "\t".join([disprotid1, disprotid2, id1, id2, len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, reg2])
+
+
     if len(out) > 0:
         print(out)  # script output
 
