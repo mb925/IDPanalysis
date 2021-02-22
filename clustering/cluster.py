@@ -16,88 +16,121 @@ def main():
 
 def calculate_union_overlap():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
-    with open(scriptdir + '/components-converted.tsv', 'r') as components:
-        for line in components:
-            sequences = []
-            reg1 = line.split('\t')[12].split(',')
-            reg2 = line.split('\t')[13].split(',')
+    with open(scriptdir + '/components-union-overlap.tsv', 'w+') as unionoverlap:
+        with open(scriptdir + '/components-converted.tsv', 'r') as components:
+            for line in components:
+                # print(line)
+                reg1 = line.split('\t')[12].split(',')
+                reg2 = line.split('\t')[13].split(',')
 
-            seq1 = sum_reg(reg1)
-            print(seq1)
-            seq2 = sum_reg(reg2)
-            if len(seq1) > len(seq2):
-                maxlen = len(seq1)
-            else:
-                maxlen = len(seq2)
-            sequences.append(seq1)
-            sequences.append(seq2)
-            finalseq = merge_seq(maxlen, sequences)
-            union = finalseq.count('1')
-            print(union)
-
-            # value to be printed into new components file
-            # overlapunion1 = overlap / union
+                len1 = int(line.split('\t')[4])
+                len2 = int(line.split('\t')[5])
 
 
-# transform regions to 0 1 strings
-def transform_regions(regions, len):
-    print(regions)
-    print(len)
-    transformedregion = []
-    return transformedregion
+                align1 = line.split('\t')[10]
+                align2 = line.split('\t')[10]
+                lenalign1 = int(len(line.split('\t')[10]))
+                lenalign2 = int(len(line.split('\t')[11]))
+                arrlen = []
+                arrlen.append(lenalign1)
+                arrlen.append(lenalign2)
+                arrlen.append(len1)
+                arrlen.append(len2)
+
+                sequencesunp = sum_seq(align1, align2, max(arrlen))
+                sequencesreg = sum_reg(reg1 + reg2, max(arrlen))
+
+                union_overlap = merge_seq(max(arrlen), sequencesreg + sequencesunp)
+
+                # for i, elem in enumerate(finalseq):
+                #     if elem == '1':
+                #         print(i + 1) # array starts from 0
 
 
-def calc_maxlen(regions):
-    maxlen = 0
-    for reg in regions:
-        end = int(reg.split('_')[1].split('-')[1])
-        if end > maxlen:
-            maxlen = end
-    return maxlen
+                union = union_overlap[0].count('1')
+                overlap = union_overlap[1].count('1')
 
+                # value to be printed into new components file
+                overlapunion = str(overlap) + '/' +  str(union)
+
+                if round((overlap / union), 2) > 0.03:
+                    print(reg2)
+                    print(reg1)
+                    print(overlapunion)
+                unionoverlap.write(''.join([line.strip(), overlapunion, '\n'] ))
+
+
+
+
+
+def sum_seq(align1, align2, maxlen):
+    sequences = []
+    alignseq1 = ''
+    alignseq2 = ''
+    for amino in align1:
+        if amino == '-':
+            alignseq1 += '0'
+        else:
+            alignseq1 += '1'
+
+    for amino in align2:
+        if amino == '-':
+            alignseq2 += '0'
+        else:
+            alignseq2 += '1'
+
+    i = len(align1)
+    j = len(align1)
+    while i < maxlen:
+        alignseq1 += '0'
+    while j < maxlen:
+        alignseq2 += '0'
+    sequences.append(alignseq1)
+    sequences.append(alignseq2)
+    return sequences
 
 def merge_seq(maxlen, sequences):
     j = 0
-    finalseq = ''
+    union = ''
+    overlap = ''
     while j < maxlen:
         elements = []
         for seq in sequences:
             elements.append(seq[j])
         if '1' in elements:
-            finalseq += '1'
+            union += '1'
         else:
-            finalseq += '0'
-    return finalseq
+            union += '0'
+        setelements = set(elements)
+        if len(setelements) == 1 and elements[0] == '1':
+            overlap += '1'
+        else:
+
+            overlap += '0'
+        j += 1
+
+    return [union, overlap]
 
 
 # perform regions union
-def sum_reg(regions):
+def sum_reg(regions, maxlen):
     sequences = []
-    maxlen = calc_maxlen(regions)
-    print(maxlen)
     for reg in regions:
-        print(reg)
         i = 0
         seq = ''
-        end = int(reg.split('_')[1].split('-')[1])
-        print(end)
-        start = int(reg.split('_')[1].split('-')[0])
-        print(start)
-        while i < maxlen:
-
+        end = int(reg.split('_')[1].split('-')[1]) - 1
+        start = int(reg.split('_')[1].split('-')[0]) - 1  # array starts from 0
+        while i <= maxlen:
             if i < start:
-
                 seq += '0'
-            elif i > start and i < end:
-                print(i)
+            elif i >= start and i <= end:
                 seq += '1'
             elif i > end:
                 seq += '0'
             i += 1
         sequences.append(seq)
-    print(sequences)
-    finalseq = merge_seq()
-    return finalseq
+
+    return sequences
 
 
 # convert start end
