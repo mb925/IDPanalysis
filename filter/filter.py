@@ -6,27 +6,50 @@ import sys
 
 def main():
     # parse_alignment_file()
-    parse_seqres_file()     # to be executed after having clustered
+    # parse_seqres_file()     # to be executed after having clustered
+    filter_components()
 
-# filter >= 30 identity
+def filter_components():
+    scriptdir = os.path.dirname(os.path.realpath(__file__))
+
+    with open(scriptdir + '/filtered-components1.tsv', 'w+') as output:
+        with open(scriptdir + '/../clustering/components-union-overlap.tsv', 'r') as input:
+            for row in input:
+                identity = round(int(row.split('\t')[6].split('/')[0]) / int(
+                    row.split('\t')[6].split('/')[1]), 2)
+                identity = identity * 100
+
+                numoverlap = int(row.split('\t')[14].split('/')[0])
+                overlap = 0
+                if numoverlap > 0:
+
+                    overlap = round(int(row.split('\t')[14].split('/')[0]) / int(
+                        row.split('\t')[14].split('/')[1]), 2)
+
+                if identity >= 80:
+                    if overlap <= 0.6:
+                        output.write(row)
+
+# filter >= 30% identity
 def parse_alignment_file():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
     with open(scriptdir + '/filter-needle-identity.txt', 'w+') as output:
-      with open(scriptdir + '/../results_needle/all-global-needle.txt', 'r') as input:
+      with open(scriptdir + '/../results_needle_al/all-global-needle.txt', 'r') as input:
             for row in input:
                 if row.startswith("#") == False:
-                    identityNum = int(row.split('\t')[6].split('/')[0])
+                    identity = int(row.split('\t')[6].split('/')[0])
+                    # identity = round(int(row.split('\t')[6].split('/')[0]) / int(
+                    #     row.split('\t')[6].split('/')[1]), 2)
+                    # identity = identity * 100
 
-                #     id1 = row.split('\t')[2]
-                #     id2 = row.split('\t')[3]
-                    if identityNum >= 30:
-                #         output.write(str(percentIdentity) + '\n')
+                    # if identity >= 30:
+                    if identity >= 0.03:
                         output.write(row)
 
 # to be executed after having clustered
 # filter structural state
-# filter uniprots from clusters
+# filter uniprots, keeping the one that are in the clusters
 def parse_seqres_file():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 

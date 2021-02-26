@@ -29,13 +29,19 @@ def parse_file():
     region = ''
     start = ''
     end = ''
+    count = 0
+    flag = False
+    alignments = ''
     if args.i:
         inf = open(args.i, 'r')
     else:
         inf = sys.stdin
 
+
     # regexpUniProt = re.compile('^[OPQopq][0-9][A-Za-z0-9]{3}[0-9]|[A-Na-nR-Zr-z][0-9]([A-Za-z][A-Za-z0-9]{2}[0-9]){1,2}$')  # seqres
     for line in inf:
+        # print(line)
+
         if line.startswith("# 1:"):
             id1 = line.split(":")[1].strip()
             # if regexpUniProt.match(id1) != None: # seqres
@@ -79,6 +85,15 @@ def parse_file():
                 sequence = line.split('    ')[1]
             seq2 += ''.join([i for i in sequence if not i.isdigit()]).strip()
 
+        elif line.startswith("#="):
+            count += 1
+            if count == 2:
+                flag = True
+        if flag:
+            if line.startswith("#-"):
+                flag = False
+            alignments += line.replace('\n', '/n')
+
     if inf is not sys.stdin:
         inf.close()
 
@@ -108,7 +123,7 @@ def parse_file():
 
 
     # out = "\t".join([disprotid1, uniprot, region.split('_')[0], len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, region]) # seqres
-    out = "\t".join([disprotid1, disprotid2, id1, id2, len1, len2, identity, similarity, gaps, score, seq1, seq2, reg1, reg2])
+    out = "\t".join([disprotid1, disprotid2, id1, id2, len1, len2, identity, similarity, gaps, score, alignments, reg1, reg2])
 
 
     if len(out) > 0:
