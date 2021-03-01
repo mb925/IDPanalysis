@@ -21,15 +21,15 @@ def calculate_union_overlap():
         with open(scriptdir + '/components-converted.tsv', 'r') as components:
             for line in components:
                 if len(line.split('\t')) > 1:
-                    print(line.split('\t')[11])
+
 
                     # print(line)
                     id2 = line.split('\t')[3].split(',')[0]
                     id1 = line.split('\t')[2].split(',')[0]
 
 
-                    reg1 = line.split('\t')[11].split(',')
-                    reg2 = line.split('\t')[12].split(',')
+                    reg1 = transform_region(line.split('\t')[11].split(','))
+                    reg2 = transform_region(line.split('\t')[12].split(','))
 
                     len1 = int(line.split('\t')[4])
                     len2 = int(line.split('\t')[5])
@@ -50,36 +50,123 @@ def calculate_union_overlap():
 
                     lenalign = int(len(align1))
 
-                    arrlen = []
-                    arrlen.append(lenalign)
-                    arrlen.append(len1)
-                    arrlen.append(len2)
-                    sequencesunp = sum_seq(align1, align2, lenalign)
-                    sequencesreg1 = sum_reg(reg1, max(arrlen))
-                    sequencesreg2 = sum_reg(reg2, max(arrlen))
-                    # if id1 == 'P29990' and id2 == 'P12823':
-                    #     print(sequencesreg1)
-                    #     print(sequencesreg2)
+                    align1 = transform_seq(align1)
+                    align2 = transform_seq(align2)
+
+                    # print(align1)
+                    # print(align2)
+                    overlap = 0
+                    sequences_interval = intersect(align1, align2)
+                    if sequences_interval is not None:
+
+                        regions_interval = intersect(reg1, reg2)
+                        if regions_interval is not None:
+                            intersection = intersect(sequences_interval, regions_interval)
+                            print(intersection)
+                            overlap = calc_overlap(intersection)
+                    # print(overlap)
+
+                    # print(align1)
+                    # print(reg1)
+
+                    # arrlen = []
+                    # arrlen.append(lenalign)
+                    # arrlen.append(len1)
+                    # arrlen.append(len2)
+                    # sequencesunp = sum_seq(align1, align2, lenalign)
+                    # sequencesreg1 = sum_reg(reg1, max(arrlen))
+                    # sequencesreg2 = sum_reg(reg2, max(arrlen))
+                    # # if id1 == 'P29990' and id2 == 'P12823':
+                    # #     print(sequencesreg1)
+                    # #     print(sequencesreg2)
+                    #
+                    #
+                    # union_overlap = merge_seq(max(arrlen), sequencesreg1 + sequencesreg2 + sequencesunp)
+                    #
+                    # # print(union_overlap)
+                    #
+                    # union = union_overlap[0].count('1')
+                    # overlap = union_overlap[1].count('1')
+                    #
+                    # # value to be printed into new components file
+                    # overlapunion = str(overlap) + '/' +  str(union)
+                    # overlap_reg = str(overlap) + '/' + find_shortest(reg1 + reg2)
+                    #
+                    # # if round((overlap / union), 2) > 0.03:
+                    # #     print(reg2)
+                    # #     print(reg1)
+                    # #     print(overlapunion)
+                    # unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
+                    #
+
+def calc_overlap(intersection):
+    for intersect in intersection[0]:
 
 
-                    union_overlap = merge_seq(max(arrlen), sequencesreg1 + sequencesreg2 + sequencesunp)
+def transform_region(regions):
+    transformed_regions = []
+    for reg in regions:
+        range = []
+        range.append(int(reg.split('_')[1].split('-')[0]))
+        range.append(int(reg.split('_')[1].split('-')[1]))
+        transformed_regions.append(range)
+    return transformed_regions
 
-                    # print(union_overlap)
+def transform_seq(sequence):
+    transformed_sequence = []
+    startFound = False
+    range = []
+    for index, amino in enumerate(sequence):
+        if amino != '-':
+            if not startFound:
+                range.append(index)
+                startFound = True
+            if index == len(sequence) - 1 and startFound:
+                range.append(index - 1)
+                range = []
 
-                    union = union_overlap[0].count('1')
-                    overlap = union_overlap[1].count('1')
+        else:
+            if startFound:
+                range.append(index - 1)
+                transformed_sequence.append(range)
+                range = []
+                startFound = False
 
-                    # value to be printed into new components file
-                    overlapunion = str(overlap) + '/' +  str(union)
-                    overlap_reg = str(overlap) + '/' + find_shortest(reg1 + reg2)
-
-                    # if round((overlap / union), 2) > 0.03:
-                    #     print(reg2)
-                    #     print(reg1)
-                    #     print(overlapunion)
-                    unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
+    return transformed_sequence
 
 
+def intersect(arr1, arr2):
+    intervals = []
+    # i and j pointers for arr1
+    # and arr2 respectively
+    i = j = 0
+
+    n = len(arr1)
+    m = len(arr2)
+
+    # Loop through all intervals unless one
+    # of the interval gets exhausted
+    while i < n and j < m:
+
+        # Left bound for intersecting segment
+        l = max(arr1[i][0], arr2[j][0])
+
+        # Right bound for intersecting segment
+        r = min(arr1[i][1], arr2[j][1])
+
+        # If segment is valid print it
+        if l <= r:
+           interval = [l,r]
+           intervals.append(interval)
+
+            # If i-th interval's right bound is
+        # smaller increment i else increment j
+        if arr1[i][1] < arr2[j][1]:
+            i += 1
+        else:
+            j += 1
+    intervals = [list(item) for item in set(tuple(row) for row in intervals)]
+    return intervals
 
 def find_shortest(regions):
     lenghtregions = []
