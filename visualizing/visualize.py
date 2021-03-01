@@ -59,7 +59,7 @@ def visualize_overlap_identity(scriptdir):
             plt.scatter(x, y, alpha=0.5)
             plt.xlabel("identity")
             plt.ylabel("overlap")
-            plt.savefig('identity-overlap.png')
+            plt.savefig('identity-overlap_new.png')
 
 
 if __name__ == '__main__':

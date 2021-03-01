@@ -56,51 +56,30 @@ def calculate_union_overlap():
                     # print(align1)
                     # print(align2)
                     overlap = 0
-                    sequences_interval = intersect(align1, align2)
+                    sequences_interval = calc_intersect(align1, align2)
                     if sequences_interval is not None:
 
-                        regions_interval = intersect(reg1, reg2)
-                        if regions_interval is not None:
-                            intersection = intersect(sequences_interval, regions_interval)
-                            print(intersection)
-                            overlap = calc_overlap(intersection)
-                    # print(overlap)
+                        # print(reg1)
+                        # print(reg2)
+                        regions_interval = calc_intersect(reg1, reg2)
+                        if len(regions_interval) > 0:
+                            intersection = calc_intersect(sequences_interval, regions_interval)
+                            # print(intersection)
+                            if len(intersection) > 0:
+                                overlap = calc_overlap(intersection)
 
-                    # print(align1)
-                    # print(reg1)
-
-                    # arrlen = []
-                    # arrlen.append(lenalign)
-                    # arrlen.append(len1)
-                    # arrlen.append(len2)
-                    # sequencesunp = sum_seq(align1, align2, lenalign)
-                    # sequencesreg1 = sum_reg(reg1, max(arrlen))
-                    # sequencesreg2 = sum_reg(reg2, max(arrlen))
-                    # # if id1 == 'P29990' and id2 == 'P12823':
-                    # #     print(sequencesreg1)
-                    # #     print(sequencesreg2)
-                    #
-                    #
-                    # union_overlap = merge_seq(max(arrlen), sequencesreg1 + sequencesreg2 + sequencesunp)
-                    #
-                    # # print(union_overlap)
-                    #
-                    # union = union_overlap[0].count('1')
-                    # overlap = union_overlap[1].count('1')
-                    #
-                    # # value to be printed into new components file
-                    # overlapunion = str(overlap) + '/' +  str(union)
-                    # overlap_reg = str(overlap) + '/' + find_shortest(reg1 + reg2)
-                    #
-                    # # if round((overlap / union), 2) > 0.03:
-                    # #     print(reg2)
-                    # #     print(reg1)
-                    # #     print(overlapunion)
-                    # unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
-                    #
+                    union = calc_union(reg1 + reg2)
+                    overlapunion = str(overlap) + '/' +  str(union)
+                    overlap_reg = str(overlap) + '/' + find_shortest(line.split('\t')[11].split(',') + line.split('\t')[12].split(','))
+                    unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
 
 def calc_overlap(intersection):
-    for intersect in intersection[0]:
+    overlap = 0
+    for intersect in intersection:
+
+        diff = intersect[1] - intersect[0]
+        overlap += diff
+    return overlap + 1
 
 
 def transform_region(regions):
@@ -134,8 +113,20 @@ def transform_seq(sequence):
 
     return transformed_sequence
 
+def calc_union(regions):
+    union = []
+    for begin, end in sorted(regions):
+        if union and union[-1][1] >= begin - 1:
+            union[-1][1] = max(union[-1][1], end)
+        else:
+            union.append([begin, end])
+    sum = 0
+    for el in union:
+        sum += el[1] - el[0]
+    return sum
 
-def intersect(arr1, arr2):
+
+def calc_intersect(arr1, arr2):
     intervals = []
     # i and j pointers for arr1
     # and arr2 respectively
@@ -296,7 +287,7 @@ def convert_regions():
 
 
                 for region1 in alignment.split('#-')[1].split('\t')[2].split(','): # maybe I could have just split alignments[12] or something
-                    print(region1)
+                    # print(region1)
                     start1 = region1.split('_')[1].split('-')[0]
                     end1 = region1.split('_')[1].split('-')[1]
                     regionid1 = region1.split('_')[0]
@@ -350,7 +341,7 @@ def filter_cluster():
             uniprot = line.split('\t')[0]
             uniprots.append(uniprot)
             regionsarr.append(region)
-    print(regionsarr)
+    # print(regionsarr)
     with open(scriptdir + '/components-filtered.tsv', 'w+') as outcomponents:
 
         with open(scriptdir + '/components.tsv', 'r') as alignments:
