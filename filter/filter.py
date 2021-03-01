@@ -12,7 +12,7 @@ def main():
 def filter_components():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
-    with open(scriptdir + '/filtered-components1.tsv', 'w+') as output:
+    with open(scriptdir + '/filtered-components.tsv', 'w+') as output:
         with open(scriptdir + '/../clustering/components-union-overlap.tsv', 'r') as input:
             for row in input:
                 identity = round(int(row.split('\t')[6].split('/')[0]) / int(
@@ -21,7 +21,7 @@ def filter_components():
 
                 numoverlap = int(row.split('\t')[14].split('/')[0])
                 overlap = 0
-                if numoverlap > 0:
+                if numoverlap > 0.5:
 
                     overlap = round(int(row.split('\t')[14].split('/')[0]) / int(
                         row.split('\t')[14].split('/')[1]), 2)

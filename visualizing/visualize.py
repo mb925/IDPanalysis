@@ -10,14 +10,19 @@ import sys
 def main():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
-    visualize_overlap_identity(scriptdir)
-    # visualize_alignments(scriptdir)
+    # visualize_overlap_identity(scriptdir)
+    visualize_alignments(scriptdir)
 
 
 def visualize_alignments(scriptdir):
-    with open(scriptdir + '/../filter/components-filtered.tsv', 'r') as input:
+    with open(scriptdir + '/../filter/filtered-components.tsv', 'r') as input:
         for line in input:
-            print(line.split('\t')[10].split('/n'))
+            print(line)
+            print(line.split('\t')[14].split('/n'))
+            print(line.split('\t')[11].split('/n'))
+            print(line.split('\t')[12].split('/n'))
+            for el in line.split('\t')[10].split('/n'):
+                print(el)
 
 def visualize_overlap_identity(scriptdir):
 
