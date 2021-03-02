@@ -48,7 +48,7 @@ def calculate_union_overlap():
                     align2 = transform_seq(align2)
 
                     overlap = 0
-                    align1 = sorted(align1, key=lambda x: x[1])
+                    align1 = sorted(align1, key=lambda x: x[1]) # sorting needed for intersect function
                     align2 = sorted(align2, key=lambda x: x[1])
 
                     sequences_interval = calc_intersect(align1, align2)
