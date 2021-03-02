@@ -17,62 +17,63 @@ def main():
 
 def calculate_union_overlap():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
-    # with open(scriptdir + '/components-union-overlap.tsv', 'w+') as unionoverlap:
-        # with open(scriptdir + '/components-converted.tsv', 'r') as components:
-    with open(scriptdir + '/test.tsv', 'r') as components:
-        for line in components:
-            if len(line.split('\t')) > 1:
+    with open(scriptdir + '/components-union-overlap.tsv', 'w+') as unionoverlap:
+        with open(scriptdir + '/components-converted.tsv', 'r') as components:
+        # with open(scriptdir + '/test.tsv', 'r') as components:
+            for line in components:
+                if len(line.split('\t')) > 1:
+
+                    id2 = line.split('\t')[3].split(',')[0]
+                    id1 = line.split('\t')[2].split(',')[0]
+
+                    reg1 = transform_region(line.split('\t')[11].split(','))
+                    reg2 = transform_region(line.split('\t')[12].split(','))
 
 
-                id2 = line.split('\t')[3].split(',')[0]
-                id1 = line.split('\t')[2].split(',')[0]
+                    align1 = ''
+                    align2 = ''
+                    alignoutput = line.split('#=')[1].split('/n')
+                    for row in alignoutput:
+                        if row.startswith(id1):
+                            row = row.split(id1)[1].strip()
+                            row = ''.join([i for i in row if not i.isdigit()]).strip()
+                            align1 += row
+                    for row in alignoutput:
+                        if row.startswith(id2):
+                            row = row.split(id2)[1].strip()
+                            row = ''.join([i for i in row if not i.isdigit()]).strip()
+                            align2 += row
 
+                    align1 = transform_seq(align1)
+                    align2 = transform_seq(align2)
 
+                    overlap = 0
+                    align1 = sorted(align1, key=lambda x: x[1])
+                    align2 = sorted(align2, key=lambda x: x[1])
 
-                reg1 = transform_region(line.split('\t')[11].split(','))
-                reg2 = transform_region(line.split('\t')[12].split(','))
+                    sequences_interval = calc_intersect(align1, align2)
+                    if sequences_interval is not None:
 
-                len1 = int(line.split('\t')[4])
-                len2 = int(line.split('\t')[5])
+                        reg1 = calc_union(reg1)[1]
+                        reg2 = calc_union(reg2)[1]
+                        reg1 = sorted(reg1, key=lambda x: x[1])
+                        reg2 = sorted(reg2, key=lambda x: x[1])
 
-                align1 = ''
-                align2 = ''
-                alignoutput = line.split('#=')[1].split('/n')
-                for row in alignoutput:
-                    if row.startswith(id1):
-                        row = row.split(id1)[1].strip()
-                        row = ''.join([i for i in row if not i.isdigit()]).strip()
-                        align1 += row
-                for row in alignoutput:
-                    if row.startswith(id2):
-                        row = row.split(id2)[1].strip()
-                        row = ''.join([i for i in row if not i.isdigit()]).strip()
-                        align2 += row
+                        regions_interval = calc_intersect(reg1, reg2)
 
-                lenalign = int(len(align1))
+                        if len(regions_interval) > 0:
+                            sequences_interval = sorted(sequences_interval, key=lambda x: x[1])
+                            regions_interval = sorted(regions_interval, key=lambda x: x[1])
 
-                align1 = transform_seq(align1)
-                align2 = transform_seq(align2)
+                            intersection = calc_intersect(sequences_interval, regions_interval)
 
-                overlap = 0
-                print(align1) # TODO : ERROR
+                            if len(intersection) > 0:
+                                overlap = calc_overlap(intersection)
 
-                sequences_interval = calc_intersect(align1, align2)
-                if sequences_interval is not None:
-
-                    reg1 = calc_union(reg1)[1]
-                    reg2 = calc_union(reg2)[1]
-                    regions_interval = calc_intersect(reg1, reg2)
-
-                    if len(regions_interval) > 0:
-                        intersection = calc_intersect(sequences_interval, regions_interval)
-                        if len(intersection) > 0:
-                            overlap = calc_overlap(intersection)
-
-                union = calc_union(reg1 + reg2)[0]
-                overlapunion = str(overlap) + '/' +  str(union)
-                overlap_reg = str(overlap) + '/' + find_shortest(line.split('\t')[11].split(',') + line.split('\t')[12].split(','))
-                    # unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
+                    union = calc_union(reg1 + reg2)[0]
+                    overlapunion = str(overlap) + '/' +  str(union)
+                    overlap_reg = str(overlap) + '/' + find_shortest(line.split('\t')[11].split(',') + line.split('\t')[12].split(','))
+                    unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
 
 def calc_overlap(intersection):
     overlap = 0
@@ -99,11 +100,13 @@ def transform_seq(sequence):
     for index, amino in enumerate(sequence):
         if amino != '-':
             if not startFound:
-                range.append(index)
+
+                range.append(index + 1)
                 startFound = True
+
             if index == len(sequence) - 1 and startFound:
                 range.append(index - 1)
-                range = []
+                transformed_sequence.append(range)
 
         else:
             if startFound:

@@ -21,7 +21,7 @@ def filter_components():
 
                 numoverlap = int(row.split('\t')[14].split('/')[0])
                 overlap = 0
-                if numoverlap > 0.5:
+                if numoverlap > 0:
 
                     overlap = round(int(row.split('\t')[14].split('/')[0]) / int(
                         row.split('\t')[14].split('/')[1]), 2)
