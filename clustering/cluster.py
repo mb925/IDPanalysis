@@ -72,7 +72,7 @@ def calculate_union_overlap():
 
                     union = calc_union(reg1 + reg2)[0]
                     overlapunion = str(overlap) + '/' +  str(union)
-                    overlap_reg = str(overlap) + '/' + find_shortest(line.split('\t')[11].split(',') + line.split('\t')[12].split(','))
+                    overlap_reg = str(overlap) + '/' + find_shortest(reg1 + reg2)
                     unionoverlap.write(''.join([line.strip(), '\t', overlapunion, '\t', overlap_reg, '\n'] ))
 
 def calc_overlap(intersection):
@@ -169,8 +169,9 @@ def calc_intersect(arr1, arr2):
 def find_shortest(regions):
     lenghtregions = []
     for reg in regions:
-        lenghtregions.append(int(reg.split('_')[1].split('-')[1]) - int(reg.split('_')[1].split('-')[0]))
+        lenghtregions.append(int(reg[1]) - int(reg[0]))
     minlength = min(lenghtregions)
+
     return str(minlength)
 
 def sum_seq(align1, align2, maxlen):
