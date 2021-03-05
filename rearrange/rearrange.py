@@ -20,7 +20,6 @@ def create_tables():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
     dataframes = []
 
-
     with open(scriptdir + '/../clustering/components-filtered.tsv', 'r') as alignments:
         for line in alignments:
             d = {'s1': [], 's2': [], 'd1': [], 'd2': []}
@@ -67,7 +66,7 @@ def create_tables():
             for el in d['s1']:
                 if el == '-':
                     d['d1'].append('na')
-                elif el in reg1:
+                elif int(el.split('_')[1]) in reg1:
                     d['d1'].append(str(1))
                 else:
                     d['d1'].append(0)
@@ -75,15 +74,19 @@ def create_tables():
             for el in d['s2']:
                 if el == '-':
                     d['d2'].append('na')
-                elif el in reg2:
+                elif int(el.split('_')[1]) in reg2:
                     d['d2'].append(str(1))
                 else:
                     d['d2'].append(0)
 
-            print(reg1)
+            title = id1 + '_' + id2
+            with open(scriptdir + '/rearranged_files' + title + '.tsv', 'w+') as out:
+                out.write('\t'.join('s1' + 's2' + 'd1' + 'd2') + '\n')
 
-            # print( d['s2'])
-            # print( d['s1'])
+                counter = 0
+                while counter < len(d['s1']):
+                    out.write('\t'.join(d['s1'] + d['s2'] + str(d['d1']) + str(d['d2']) + '\n')
+
 
 def expand_regions(regions):
     transformed_regions = []
