@@ -6,8 +6,8 @@ import sys
 
 def main():
     # parse_alignment_file()
-    # parse_seqres_file()     # to be executed after having clustered
-    filter_components()
+    parse_seqres_file()     # to be executed after having clustered
+    # filter_components()
 
 def filter_components():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
@@ -38,19 +38,20 @@ def parse_alignment_file():
       with open(scriptdir + '/../results_needle_al/all-global-needle.txt', 'r') as input:
             for row in input:
                 if row.startswith("#") == False:
-                    identity = int(row.split('\t')[6].split('/')[0])
-                    # identity = round(int(row.split('\t')[6].split('/')[0]) / int(
-                    #     row.split('\t')[6].split('/')[1]), 2)
-                    # identity = identity * 100
-
-                    # if identity >= 30:
-                    if identity >= 0.03:
+                    # identity = int(row.split('\t')[6].split('/')[0])
+                    identity = round(int(row.split('\t')[6].split('/')[0]) / int(
+                        row.split('\t')[6].split('/')[1]), 2)
+                    identity = identity * 100
+                    # print(identity)
+                    if identity >= 30:
+                    # if identity >= 0.03:
                         output.write(row)
 
 # to be executed after having clustered
 # filter structural state
 # filter uniprots, keeping the one that are in the clusters
 def parse_seqres_file():
+
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
     uniprots = []

@@ -9,9 +9,9 @@ import pandas as pd
 
 def main():
     # cluster_file()
-    # filter_cluster()
+    filter_cluster()
     # convert_regions()
-    calculate_union_overlap()
+    # calculate_union_overlap()
 
 
 
@@ -44,8 +44,12 @@ def calculate_union_overlap():
                             row = ''.join([i for i in row if not i.isdigit()]).strip()
                             align2 += row
 
+
+
                     align1 = transform_seq(align1)
                     align2 = transform_seq(align2)
+                    # print(align1)
+                    # print(align2)
 
                     overlap = 0
                     align1 = sorted(align1, key=lambda x: x[1]) # sorting needed for intersect function
@@ -54,8 +58,10 @@ def calculate_union_overlap():
                     sequences_interval = calc_intersect(align1, align2)
                     if sequences_interval is not None:
 
+
                         reg1 = calc_union(reg1)[1]
                         reg2 = calc_union(reg2)[1]
+
                         reg1 = sorted(reg1, key=lambda x: x[1])
                         reg2 = sorted(reg2, key=lambda x: x[1])
 
@@ -101,16 +107,16 @@ def transform_seq(sequence):
         if amino != '-':
             if not startFound:
 
-                range.append(index + 1)
+                range.append(index)
                 startFound = True
 
             if index == len(sequence) - 1 and startFound:
-                range.append(index - 1)
+                range.append(index)
                 transformed_sequence.append(range)
 
         else:
             if startFound:
-                range.append(index - 1)
+                range.append(index)
                 transformed_sequence.append(range)
                 range = []
                 startFound = False
@@ -338,6 +344,7 @@ def convert_region(start, end, sequence):
 
 # remove uniprots that do not have a structural state region associated
 def filter_cluster():
+
     scriptdir = os.path.dirname(os.path.realpath(__file__))
     removedproteins = 0
     regionsarr = []
