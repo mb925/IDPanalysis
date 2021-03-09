@@ -22,118 +22,179 @@ def main():
     # visualize_overlap(scriptdir)
 
 def visualize_overlap_identity(scriptdir):
-    x, y, z = [], [], []
+    x, y, z, union = [], [], [], []
     count_mismatch = 0
+
     for filename in os.listdir(scriptdir + '/../rearrange/rearranged_files'):
         with open(scriptdir + '/../rearrange/rearranged_files/' + filename) as file:
             for line in file:
+                overlap_match = 0
+                overlap_similar = 0
+
                 if line.startswith('>identity: '):
                     identitynum = line.split('>identity: ')[1].replace('\n', '').split('/')[0]
                     identity = round(int(identitynum) / int(line.split('>identity: ')[1].replace('\n', '').split('/')[1]), 2)
                     identity = identity * 100
 
                     x.append(identity)
-                elif line.startswith('>overlap/union_match: '):
+                if line.startswith('>overlap/union_match: '):
+
+                    numoverlap = int(line.split('>overlap/union_match: ')[1].split('/')[0])
+
+                    if numoverlap > 0:
+                        overlap_match = round(numoverlap / int(line.split('>overlap/union_match: ')[1].split('/')[1]), 2)
+                    y.append(overlap_match)
+                    # print(overlap_match)
+
+                if line.startswith('>overlap/union_similar: '):
+                    numoverlap = int(line.split('>overlap/union_similar: ')[1].split('/')[0])
+                    if numoverlap > 0:
+                        print(numoverlap)
+                        print(line)
+                        overlap_similar = round(numoverlap / int(line.split('>overlap/union_similar: ')[1].split('/')[1]), 2)
+                    union.append(int(line.split('>overlap/union_similar: ')[1].split('/')[1]))
+                    z.append(overlap_similar)
+                    continue
+
+
+                # if identity >= 80 and overlap_similar <= 0.5:
+                #     copyfile(scriptdir + '/../rearrange/rearranged_files/' + filename, scriptdir + '/low_overlap_high_identity_mismatch/' + filename)
+                #     count_mismatch += 1
+                #
+                #     # print(overlap)
+    print('Low overlap high identity, total number of files: ' + str(count_mismatch))
+
+    my_dpi = 50
+    fig = plt.figure( figsize=(20, 10), dpi=my_dpi)
+    print(fig)
+
+    fig.suptitle('overlap/union', fontsize=24)
+    ax1 = fig.add_subplot(1, 3, 1)
+    ax1.set_title('overlap/union similar - overlap', fontsize=20)
+    ax1.set_xlabel('identity', fontsize=20)
+    cm = plt.cm.get_cmap('seismic')
+    sc = ax1.scatter(x, z, c=y, cmap=cm)
+    plt.colorbar(sc)
+
+
+    ax2 = fig.add_subplot(1, 3, 3)
+    ax2.scatter(x, y)
+    ax2.set_xlabel('identity', fontsize=20)
+    ax2.set_title('overlap/union match', fontsize=20)
+
+    union = NormalizeData(union)
+    print(union)
+    ax3 = fig.add_subplot(1, 3, 2)
+    sc3 = ax3.scatter(x, z, c=union, cmap=cm)
+    plt.colorbar(sc3)
+
+    ax3.set_xlabel('identity', fontsize=20)
+    ax3.set_title('overlap/union similar - union', fontsize=20)
+
+    fig.savefig('identity-overlap-new.png')
+
+def NormalizeData(data):
+    return (data - np.min(data)) / (np.max(data) - np.min(data))
+
+def visualize_identity(scriptdir):
+
+    data = []
+    dict = {}
+    ids = []
+    data_overlap = []
+
+    for filename in os.listdir(scriptdir + '/../rearrange/rearranged_files'):
+        with open(scriptdir + '/../rearrange/rearranged_files/' + filename) as file:
+            filename = filename.split('.')[0]
+
+            for line in file:
+                if line.startswith('>identity: '):
+                    identitynum = line.split('>identity: ')[1].replace('\n', '').split('/')[0]
+                    identity = round(
+                        int(identitynum) / int(line.split('>identity: ')[1].replace('\n', '').split('/')[1]), 2)
+                    identity = identity * 100
+                if line.startswith('>overlap/union_match: '):
                     overlap = 0
                     numoverlap = int(line.split('>overlap/union_match: ')[1].split('/')[0])
                     if numoverlap > 0:
                         overlap = round(numoverlap / int(line.split('>overlap/union_match: ')[1].split('/')[1]), 2)
-                    y.append(overlap)
-                elif line.startswith('>overlap/union: '):
-                    overlap = 0
-                    numoverlap = int(line.split('>overlap/union: ')[1].split('/')[0])
-                    if numoverlap > 0:
-                        overlap = round(numoverlap / int(line.split('>overlap/union: ')[1].split('/')[1]), 2)
-                        z.append(overlap)
-                if identity >= 80 and overlap <= 0.5:
-                    copyfile(scriptdir + '/../rearrange/rearranged_files/' + filename, scriptdir + '/low_overlap_high_identity_mismatch/' + filename)
-                    count_mismatch += 1
+                    data_overlap.append(overlap)
+                if filename in dict:
+                    dict[filename.split('_')[0]].append(identity)
+                else:
+                    dict[filename.split('_')[0]] = []
+                    dict[filename.split('_')[0]].append(identity)
 
-                    # print(overlap)
-                    continue
-    print('Low overlap high identity, total number of files: ' + str(count_mismatch))
+    for key in dict:
+        maxval = max(dict[key])
+        ids.append(key)
+        data.append(round(maxval, 2))
+    print(data_overlap)
+    # TODO add axes
+    # plt.hist(data, bins=20) # do not run both plots toghether or the results will overlap
+    # plt.gcf().savefig('max-identity.png')
 
-    my_dpi = 50
-    fig, ax = plt.subplots(nrows=3, ncols=2, figsize=(10, 10), dpi=my_dpi)
-    print(fig)
-    print(ax)
-    fig.suptitle('Subplot ex2: Define subplots first', fontsize=20)
-    ax[0, 1].set_title('Subplot 1', fontsize=14)
+    plt.hist(data_overlap, bins=20)
+    plt.gcf().savefig('overlap-match-hist.png')
 
-    ax[2, 1].scatter(x, y)
-    ax[2, 1].set_xlabel('X input', fontsize=14)
-    ax[2, 1].set_title('Subplot 5', fontsize=14)
-    # ax.scatter(x, y, alpha=0.5)
-    # ax.set_title('identity-overlap')
-    # # Save figure
-    # ax.set_xlabel("identity")
-    # ax.set_ylabel("overlap/union region")
-    fig.savefig('identity-overlap-new.png')
-
-
-
-
-
-
-
-def visualize_identity(scriptdir):
-
-        data = []
-        dict = {}
-        ids = []
-
-        for filename in os.listdir(scriptdir + '/../rearrange/rearranged_files'):
-            with open(scriptdir + '/../rearrange/rearranged_files/' + filename) as file:
-                filename = filename.split('.')[0]
-
-                for line in file:
-                    if line.startswith('>identity: '):
-                        identitynum = line.split('>identity: ')[1].replace('\n', '').split('/')[0]
-                        identity = round(
-                            int(identitynum) / int(line.split('>identity: ')[1].replace('\n', '').split('/')[1]), 2)
-                        identity = identity * 100
-
-                    elif line.startswith('>overlap/union: '):
-                        overlap = 0
-                        numoverlap = int(line.split('>overlap/union: ')[1].split('/')[0])
-                        if numoverlap > 0:
-                            overlap = round(numoverlap / int(line.split('>overlap/union: ')[1].split('/')[1]), 2)
-                        if overlap >= 0.3:
-
-                            if filename in dict:
-                                dict[filename].append(identity)
-                                # dict[filename].append(overlap)
-                            else:
-                                dict[filename] = []
-                                dict[filename].append(identity)
-
-                                # dict[filename].append(overlap)
-
-        for key in dict:
-            maxval = max(dict[key])
-            ids.append(key)
-            data.append(maxval)
-        print(dict)
-        i = 0
-        lenids = len(ids)
-        while i < lenids:
-
-            stop = i + 50
-            subsetids = ids[i:stop]
-            subsetdata = data[i:stop]
-            y_pos = np.arange(len(subsetids))
-
-            # Create bars
-            plt.bar(y_pos, subsetdata)
-
-            # Create names on the x-axis
-            plt.xticks(y_pos, subsetids, rotation=90)
-
-            plt.savefig('hist_identity/subset' + str(i) + '.png')
-            # plt.savefig('hist_overlap/subset' + str(i) + '.png')
-            i += 50
-            plt.clf()
-            print(i)
+# def visualize_identity(scriptdir):
+#
+#         data = []
+#         dict = {}
+#         ids = []
+#
+#         for filename in os.listdir(scriptdir + '/../rearrange/rearranged_files'):
+#             with open(scriptdir + '/../rearrange/rearranged_files/' + filename) as file:
+#                 filename = filename.split('.')[0]
+#
+#                 for line in file:
+#                     if line.startswith('>identity: '):
+#                         identitynum = line.split('>identity: ')[1].replace('\n', '').split('/')[0]
+#                         identity = round(
+#                             int(identitynum) / int(line.split('>identity: ')[1].replace('\n', '').split('/')[1]), 2)
+#                         identity = identity * 100
+#
+#                     elif line.startswith('>overlap/union: '):
+#                         overlap = 0
+#                         numoverlap = int(line.split('>overlap/union: ')[1].split('/')[0])
+#                         if numoverlap > 0:
+#                             overlap = round(numoverlap / int(line.split('>overlap/union: ')[1].split('/')[1]), 2)
+#                         if overlap >= 0.3:
+#
+#                             if filename in dict:
+#                                 dict[filename].append(identity)
+#                                 # dict[filename].append(overlap)
+#                             else:
+#                                 dict[filename] = []
+#                                 dict[filename].append(identity)
+#
+#                                 # dict[filename].append(overlap)
+#
+#         for key in dict:
+#             maxval = max(dict[key])
+#             ids.append(key)
+#             data.append(maxval)
+#         print(dict)
+#         i = 0
+#         lenids = len(ids)
+#         while i < lenids:
+#
+#             stop = i + 50
+#             subsetids = ids[i:stop]
+#             subsetdata = data[i:stop]
+#             y_pos = np.arange(len(subsetids))
+#
+#             # Create bars
+#             plt.bar(y_pos, subsetdata)
+#
+#             # Create names on the x-axis
+#             plt.xticks(y_pos, subsetids, rotation=90)
+#
+#             plt.savefig('hist_identity/subset' + str(i) + '.png')
+#             # plt.savefig('hist_overlap/subset' + str(i) + '.png')
+#             i += 50
+#             plt.clf()
+#             print(i)
 
 
 # def visualize_alignments(scriptdir):

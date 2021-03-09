@@ -90,13 +90,13 @@ def create_tables():
                     d['d2'].append(0)
 
             title = id1 + '_' + id2
-            overlap, union = calc_overlap_mismatch(d)
-            overlap_match, union_match = calc_overlap_match(d)
-            print(overlap, union)
+
+            overlap_match, overlap_similar, union = calc_overlap_match_similar(d)
+
             with open(scriptdir + '/rearranged_files/' + title + '.tsv', 'w+') as out:
                 out.write('>identity: ' + line.split('\t')[6] + '\n')
-                out.write('>overlap/union: ' + overlap + '/' + union + '\n')
-                out.write('>overlap/union_match: ' + overlap_match + '/' + union_match + '\n')
+                out.write('>overlap/union_match: ' + overlap_match + '/' + union + '\n')
+                out.write('>overlap/union_similar: ' + overlap_similar + '/' + union + '\n')
                 out.write('s1' + '\t' + 's2' + '\t' + 'p1' + '\t' + 'p2' + '\t' + 'd1' + '\t' + 'd2' + '\n')
 
 
@@ -105,28 +105,28 @@ def create_tables():
                     out.write(d['s1'][counter] + '\t' + d['s2'][counter]  + '\t' + d['p1'][counter] + '\t' + d['p2'][counter] + '\t' + str(d['d1'][counter]) + '\t' + str(d['d2'][counter]) + '\n')
                     counter += 1
 
-def calc_overlap_mismatch(df):
-    # for filename in os.listdir(scriptdir + '/rearranged_files'):
-    #     print(pd.read_csv(scriptdir + '/rearranged_files/' + filename, sep='\t', header=0))
-    #     df = pd.read_csv(scriptdir + '/rearranged_files/' + filename, sep='\t', header=0)
-    overlap = 0
-    union = 0
-    for index, d1 in enumerate(df['d1']):
-        if d1 and df['d2'][index] == '1':
-            overlap += 1
-        if d1 or df['d2'][index] == '1':
-            union += 1
-    return [str(overlap), str(union)]
 
-def calc_overlap_match(df):
-    overlap = 0
+
+def calc_overlap_match_similar(df):
+    overlap_match = 0
+    union_match = 0
+    overlap_similar = 0
     union = 0
     for index, d1 in enumerate(df['d1']):
-        if d1 and df['d2'][index] == '1' and d1 == df['d2'][index]:
-            overlap += 1
-        if d1 or df['d2'][index] == '1' and d1 == df['d2'][index]:
+        if d1 == '1' and df['d2'][index] == '1':
+            overlap_similar += 1
+            if df['s1'][index] == df['s2'][index]:
+                overlap_match += 1
+        if d1 == '1' or df['d2'][index] == '1':
             union += 1
-    return [str(overlap), str(union)]
+
+    # if overlap_similar < overlap_match:
+    #     print(overlap_match)
+    #     print(overlap_similar)
+    # if union_similar < union_match:
+    #     print(union_match)
+    #     print(union_similar)
+    return [str(overlap_match), str(overlap_similar), str(union)]
 
 def expand_regions(regions):
     transformed_regions = []
