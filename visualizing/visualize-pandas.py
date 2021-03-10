@@ -12,47 +12,72 @@ def main():
     # visualize_identity(scriptdir)
     # visualize_overlap(scriptdir)
 
-def my_agg(x):
-    counts = {
-        'overlap_match': (x['d1']==1 & x['d2']==1).sum()
-    }
-    print(counts)
-
-    return counts
-
 def visualize_overlap_identity(scriptdir):
-    x, y, z, union = [], [], [], []
+    x, y, z, union_similar = [], [], [], []
 
     df = pd.read_csv(scriptdir + '/../rearrange/rearranged_files/dataframe-all.tsv', sep='\t')
-    print(df)
+    identitydf = pd.read_csv(scriptdir + '/../clustering/components-filtered.tsv', sep='\t')
 
-    res = df.groupby('id1')#.apply(lambda g: (g.d2 == 1 and g.d1 == 1).sum())
-    print(df.loc[(df.d2 == 1) & (df.d1 == 1)].groupby('id1').size())
-    print(df.loc[(df.d2 == 1) & (df.d1 == 1) & (df.s1 == df.s2)].groupby('id1').size())
-    #print(res)
+    ids_identity = identitydf[['id1', 'identity']].sort_values(by=['id1'])
+    union_similar = df.loc[(df.d2 == 1) | (df.d1 == 1)].groupby('id1').size().to_frame('union-similar')
+    m1 = pd.merge(ids_identity, union_similar, left_on='id1', right_on='id1', how='left')
+    overlap_similar = df.loc[(df.d2 == 1) & (df.d1 == 1)].groupby('id1').size().to_frame('overlap-similar')
+    m2 = pd.merge(m1, overlap_similar, left_on='id1', right_on='id1', how='left')
+    overlap_match = df.loc[(df.d2 == 1) & (df.d1 == 1) & (df.s1 == df.s2)].groupby('id1').size().to_frame('overlap-match')
+    m3 = pd.merge(m2, overlap_match, left_on='id1', right_on='id1', how='left')
+    print(m3)
+
+    for value in m3['identity'].values:
+        num = int(value.split('/')[0])
+        den = int(value.split('/')[1])
+        value = 0
+        if num != 0 and den !=0:
+            value = round((num / den  * 100), 2)
+        x.append(value)
+
+    i = 0
+    while i < len(m3['overlap-similar'].values):
+        ov_sim = 0
+        ov_match = 0
+
+        den = m3['union-similar'].values[i]
+        num_sim = m3['overlap-similar'].values[i]
+        num_match = m3['overlap-match'].values[i]
 
 
-    # group = df.groupby('id1')['d1'].apply(lambda x: (x==1).sum()).reset_index(name='count')
-    # print(group)
+        if np.isnan(den) == False:
+            if not np.isnan(num_sim):
+                ov_sim = round((num_sim / den),2)
+            if not np.isnan(num_match):
+                ov_match = round((num_match / den),2)
+        z.append(ov_sim)
+        y.append(ov_match)
+        i += 1
 
-    # my_dpi = 50
-    # fig = plt.figure( figsize=(20, 10), dpi=my_dpi)
-    # print(fig)
-    #
-    # fig.suptitle('overlap/union', fontsize=24)
-    # ax1 = fig.add_subplot(1, 3, 1)
-    # ax1.set_title('overlap/union similar - overlap', fontsize=20)
-    # ax1.set_xlabel('identity', fontsize=20)
-    # cm = plt.cm.get_cmap('seismic')
-    # sc = ax1.scatter(x, z, c=y, cmap=cm)
-    # plt.colorbar(sc)
-    #
-    #
-    # ax2 = fig.add_subplot(1, 3, 3)
-    # ax2.scatter(x, y)
-    # ax2.set_xlabel('identity', fontsize=20)
-    # ax2.set_title('overlap/union match', fontsize=20)
-    #
+
+    print(x)
+    print(y)
+    print(z)
+
+
+    my_dpi = 50
+    fig = plt.figure( figsize=(20, 10), dpi=my_dpi)
+    print(fig)
+
+    fig.suptitle('overlap/union', fontsize=24)
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax1.set_title('overlap/union similar - overlap', fontsize=20)
+    ax1.set_xlabel('identity', fontsize=20)
+    cm = plt.cm.get_cmap('seismic')
+    sc = ax1.scatter(x, z, c=y, cmap=cm)
+    plt.colorbar(sc)
+
+
+    ax2 = fig.add_subplot(1, 2, 2)
+    ax2.scatter(x, y)
+    ax2.set_xlabel('identity', fontsize=20)
+    ax2.set_title('overlap/union match', fontsize=20)
+
     # union = NormalizeData(union)
     # print(union)
     # ax3 = fig.add_subplot(1, 3, 2)
@@ -61,8 +86,8 @@ def visualize_overlap_identity(scriptdir):
     #
     # ax3.set_xlabel('identity', fontsize=20)
     # ax3.set_title('overlap/union similar - union', fontsize=20)
-    #
-    # fig.savefig('identity-overlap-new.png')
+
+    fig.savefig('identity-overlap-new-pandas.png')
 
 def NormalizeData(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))

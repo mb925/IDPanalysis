@@ -69,7 +69,8 @@ def visualize_overlap_identity(scriptdir):
     print(fig)
 
     fig.suptitle('overlap/union', fontsize=24)
-    ax1 = fig.add_subplot(1, 3, 1)
+    ax1 = fig.add_subplot(1, 2, 1)
+    # ax1 = fig.add_subplot(1, 3, 1)
     ax1.set_title('overlap/union similar - overlap', fontsize=20)
     ax1.set_xlabel('identity', fontsize=20)
     cm = plt.cm.get_cmap('seismic')
@@ -77,19 +78,20 @@ def visualize_overlap_identity(scriptdir):
     plt.colorbar(sc)
 
 
-    ax2 = fig.add_subplot(1, 3, 3)
+    # ax2 = fig.add_subplot(1, 3, 3)
+    ax2 = fig.add_subplot(1, 2, 2)
     ax2.scatter(x, y)
     ax2.set_xlabel('identity', fontsize=20)
     ax2.set_title('overlap/union match', fontsize=20)
 
-    union = NormalizeData(union)
-    print(union)
-    ax3 = fig.add_subplot(1, 3, 2)
-    sc3 = ax3.scatter(x, z, c=union, cmap=cm)
-    plt.colorbar(sc3)
-
-    ax3.set_xlabel('identity', fontsize=20)
-    ax3.set_title('overlap/union similar - union', fontsize=20)
+    # union = NormalizeData(union)
+    # print(union)
+    # ax3 = fig.add_subplot(1, 3, 2)
+    # sc3 = ax3.scatter(x, z, c=union, cmap=cm)
+    # plt.colorbar(sc3)
+    #
+    # ax3.set_xlabel('identity', fontsize=20)
+    # ax3.set_title('overlap/union similar - union', fontsize=20)
 
     fig.savefig('identity-overlap-new.png')
 

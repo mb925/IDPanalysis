@@ -357,7 +357,13 @@ def filter_cluster():
             regionsarr.append(region)
     # print(regionsarr)
     with open(scriptdir + '/components-filtered.tsv', 'w+') as outcomponents:
+        outcomponents.write('reg1' + '\t' + 'reg2' + '\t' + 'id1' + '\t' + 'id2' + '\t'
+                            + 'l1' + '\t' + 'l2' + '\t' + 'identity' + '\t' + 'similarity' + '\t'
+                            + 'gaps' + '\t' + 'score' + '\t'
+                            + 'align1' + '\t' + 'align2' + '\t'
 
+                            + 'regions1' + '\t' + 'regions2' + '\t'
+                            + 'cluster' + '\n')
         with open(scriptdir + '/components.tsv', 'r') as alignments:
             for alignment in alignments:
 
