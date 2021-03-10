@@ -15,12 +15,11 @@ def main():
 def create_tables():
 
     scriptdir = os.path.dirname(os.path.realpath(__file__))
-    dataframes = []
+
 
     with open(scriptdir + '/../clustering/components-filtered.tsv', 'r') as alignments:
         for line in alignments:
-            overlap = 0
-            union = 0
+
             d = {'s1': [], 'p1': [], 'p2': [], 's2': [], 'd1': [], 'd2': []}
             id1 = line.split('\t')[2]
             id2 = line.split('\t')[3]
