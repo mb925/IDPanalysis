@@ -15,13 +15,17 @@ def main():
 def create_tables():
 
     scriptdir = os.path.dirname(os.path.realpath(__file__))
-    with open(scriptdir + '/rearranged_files/dataframe-all.tsv', 'w+') as out:
+    # with open(scriptdir + '/outtest.tsv', 'w+') as out:
+    with open(scriptdir + '/rearranged_files/all-dataframe.tsv', 'w+') as out:
         out.write('id1' + '\t' + 'id2' + '\t' + 's1' + '\t' + 's2' + '\t' + 'p1' + '\t' + 'p2' + '\t' + 'd1' + '\t' + 'd2' + '\n')
-        d = {'id1': [], 'id2': [], 's1': [], 'p1': [], 'p2': [], 's2': [], 'd1': [], 'd2': []}
         count = 0
+        # with open(scriptdir + '/testinp.tsv', 'r') as alignments:
+
         with open(scriptdir + '/../clustering/components-filtered.tsv', 'r') as alignments:
+            next(alignments)
+
             for line in alignments:
-                # print(line)
+                d = {'id1': [], 'id2': [], 's1': [], 'p1': [], 'p2': [], 's2': [], 'd1': [], 'd2': []}
 
                 id1 = line.split('\t')[2]
                 id2 = line.split('\t')[3]
@@ -79,7 +83,7 @@ def create_tables():
                     if el == '-': # if you have a gap you can't have disprot region
                         d['d1'].append('')
                     elif int(d['p1'][index]) in reg1:
-                        d['d1'].append(str(1))
+                        d['d1'].append(1)
                     else:
                         d['d1'].append(0)
 
@@ -87,7 +91,7 @@ def create_tables():
                     if el == '-':
                         d['d2'].append('')
                     elif int(d['p2'][index]) in reg2:
-                        d['d2'].append(str(1))
+                        d['d2'].append(1)
                     else:
                         d['d2'].append(0)
 
@@ -95,13 +99,14 @@ def create_tables():
                 count += 1
                 print(count)
 
-            x = 0
-            while x < len(d['id2']):
 
-                out.write(d['id1'][x] + '\t' + d['id2'][x] + '\t' + d['s1'][x] + '\t' + d['s2'][
-                    x] + '\t' + d['p1'][x] + '\t' + d['p2'][x] + '\t' + str(d['d1'][x]) + '\t' + str(
-                    d['d2'][x]) + '\n')
-                x += 1
+                x = 0
+                while x < len(d['id2']):
+
+                    out.write(d['id1'][x] + '\t' + d['id2'][x] + '\t' + d['s1'][x] + '\t' + d['s2'][
+                        x] + '\t' + d['p1'][x] + '\t' + d['p2'][x] + '\t' + str(d['d1'][x]) + '\t' + str(
+                        d['d2'][x]) + '\n')
+                    x += 1
 
 
 def expand_regions(regions):

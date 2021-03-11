@@ -5,6 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 import pandas as pd
 
+
 def main():
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -13,51 +14,70 @@ def main():
     # visualize_overlap(scriptdir)
 
 def visualize_overlap_identity(scriptdir):
-    x, y, z, union_similar = [], [], [], []
 
-    df = pd.read_csv(scriptdir + '/../rearrange/rearranged_files/dataframe-all.tsv', sep='\t')
+    ident, overl_mat, overl_mis, union_similar = [], [], [], []
+
+    df = pd.read_csv(scriptdir + '/../rearrange/rearranged_files/all-dataframe.tsv', sep='\t')
     identitydf = pd.read_csv(scriptdir + '/../clustering/components-filtered.tsv', sep='\t')
 
-    ids_identity = identitydf[['id1', 'identity']].sort_values(by=['id1'])
-    union_similar = df.loc[(df.d2 == 1) | (df.d1 == 1)].groupby('id1').size().to_frame('union-similar')
-    m1 = pd.merge(ids_identity, union_similar, left_on='id1', right_on='id1', how='left')
-    overlap_similar = df.loc[(df.d2 == 1) & (df.d1 == 1)].groupby('id1').size().to_frame('overlap-similar')
-    m2 = pd.merge(m1, overlap_similar, left_on='id1', right_on='id1', how='left')
-    overlap_match = df.loc[(df.d2 == 1) & (df.d1 == 1) & (df.s1 == df.s2)].groupby('id1').size().to_frame('overlap-match')
-    m3 = pd.merge(m2, overlap_match, left_on='id1', right_on='id1', how='left')
+    ids_identity = identitydf[['id1', 'id2', 'identity']].sort_values(by=['id1'])
+    union_similar = df.loc[(df.d2 == 1) | (df.d1 == 1)].groupby(['id1', 'id2']).size().to_frame('union-similar')
+
+    m1 = pd.merge(ids_identity, union_similar, on=['id1', 'id2'])
+    print(m1)
+    overlap_similar = df.loc[(df.d2 == 1) & (df.d1 == 1)].groupby(['id1', 'id2']).size().to_frame('overlap-similar')
+    m2 = pd.merge(m1, overlap_similar, on=['id1', 'id2'], how='outer')
+    print(m2)
+    overlap_match = df.loc[(df.d2 == 1) & (df.d1 == 1) & (df.s1 == df.s2)].groupby(['id1', 'id2']).size().to_frame('overlap-match')
+    m3 = pd.merge(m2, overlap_match, on=['id1', 'id2'], how='outer')
     print(m3)
+    # print(m2.loc[  ((m2.d1 == 'Q9Y6I3') & (df.id2 == 'O88339'))])
+
 
     for value in m3['identity'].values:
         num = int(value.split('/')[0])
         den = int(value.split('/')[1])
+
         value = 0
         if num != 0 and den !=0:
-            value = round((num / den  * 100), 2)
-        x.append(value)
+            value = (num / den)  * 100
+        ident.append(round(value, 2))
 
+    print(len(ident))
     i = 0
     while i < len(m3['overlap-similar'].values):
         ov_sim = 0
         ov_match = 0
-
+        num_sim = 0
+        num_match = 0
         den = m3['union-similar'].values[i]
-        num_sim = m3['overlap-similar'].values[i]
-        num_match = m3['overlap-match'].values[i]
+
+        if np.isnan( m3['overlap-similar'].values[i]) == False:
+            num_sim = int(m3['overlap-similar'].values[i])
+        if np.isnan(m3['overlap-match'].values[i]) == False:
+            num_match = int(m3['overlap-match'].values[i])
 
 
-        if np.isnan(den) == False:
-            if not np.isnan(num_sim):
-                ov_sim = round((num_sim / den),2)
-            if not np.isnan(num_match):
-                ov_match = round((num_match / den),2)
-        z.append(ov_sim)
-        y.append(ov_match)
+
+
+        if num_sim != 0:
+            ov_sim = round((num_sim / den),2)
+        if num_match != 0:
+            ov_match = round((num_match / den),2)
+        overl_mis.append(ov_sim)
+        overl_mat.append(ov_match)
         i += 1
 
 
-    print(x)
-    print(y)
-    print(z)
+
+
+    print(sorted(overl_mis))
+    print(len(overl_mis))
+
+
+    # print('ident_pandas')
+    # print(ident.sort())
+    # print(len(ident))
 
 
     my_dpi = 50
@@ -69,12 +89,12 @@ def visualize_overlap_identity(scriptdir):
     ax1.set_title('overlap/union similar - overlap', fontsize=20)
     ax1.set_xlabel('identity', fontsize=20)
     cm = plt.cm.get_cmap('seismic')
-    sc = ax1.scatter(x, z, c=y, cmap=cm)
+    sc = ax1.scatter(ident, overl_mis, c=overl_mat, cmap=cm)
     plt.colorbar(sc)
 
 
     ax2 = fig.add_subplot(1, 2, 2)
-    ax2.scatter(x, y)
+    ax2.scatter(ident, overl_mat)
     ax2.set_xlabel('identity', fontsize=20)
     ax2.set_title('overlap/union match', fontsize=20)
 
